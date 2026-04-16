@@ -1,5 +1,3 @@
-# LinhaMontagemAMOVER[README-LinhaMontagemAJP.md](https://github.com/user-attachments/files/26768376/README-LinhaMontagemAJP.md)
-<div align="center">
 
 ```
      ╔═══════════════════════════════════════════════════════╗
