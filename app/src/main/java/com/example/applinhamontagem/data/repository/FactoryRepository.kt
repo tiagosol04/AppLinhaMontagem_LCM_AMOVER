@@ -2,6 +2,7 @@ package com.example.applinhamontagem.data.repository
 
 import com.example.applinhamontagem.data.remote.RetrofitClient
 import com.example.applinhamontagem.data.remote.dto.*
+import com.example.applinhamontagem.data.utils.ScannerInputHelper
 import retrofit2.Response
 
 class FactoryRepository {
@@ -13,7 +14,7 @@ class FactoryRepository {
     private fun <T> unwrap(resp: Response<T>, ctx: String): T {
         if (resp.isSuccessful && resp.body() != null) return resp.body()!!
         val errorBody = resp.errorBody()?.string()?.take(200) ?: ""
-        throw Exception("Erro ${resp.code()} em $ctx: $errorBody")
+        throw Exception(ScannerInputHelper.mapApiError(errorBody, resp.code()))
     }
 
     // --- ORDENS ---
@@ -67,12 +68,15 @@ class FactoryRepository {
         unwrap(api.updateVin(idMota, UpdateVinRequest(vin)), "updateVin")
     }
 
-    suspend fun concluirMota(idMota: Int): Result<Unit> = runCatching {
-        val res = api.updateEstadoMota(idMota, UpdateEstadoRequest(estado = 2))
-        if (!res.isSuccessful) throw Exception("Erro ${res.code()}: Nao foi possivel concluir a mota.")
-    }
+    // Estados válidos da API: 0=Em Produção, 1=Ativa, 2=Em Manutenção, 3=Descontinuada.
+    // Não existe estado "Concluída" na versão atual da API.
+    // Para concluir a etapa de embalagem usa-se marcarEmbalada().
+    @Deprecated("Não existe estado 'Concluída' na API atual. Use marcarEmbalada() para a etapa de embalagem.")
+    suspend fun concluirMota(idMota: Int): Result<Unit> = Result.failure(
+        IllegalStateException("Operação não suportada: o estado 'Concluída' não existe na versão atual da API.")
+    )
 
-    // --- PECAS ---
+    // --- PEÇAS ---
     suspend fun getDefinicaoPecas(idModelo: Int): Result<List<ModeloPecaSnDto>> = runCatching {
         unwrap(api.getPecasNecessarias(idModelo), "getPecasNecessarias")
     }
@@ -97,6 +101,20 @@ class FactoryRepository {
             ChecklistTipo.EMBALAGEM -> api.updateEmbalagem(idOrdem, idChecklist, req)
             ChecklistTipo.CONTROLO -> api.updateControlo(idOrdem, idChecklist, req)
         }
-        if (!res.isSuccessful) throw Exception("Erro ${res.code()}: Falha ao atualizar checklist.")
+        if (!res.isSuccessful) {
+            val errorBody = res.errorBody()?.string()?.take(200) ?: ""
+            throw Exception(ScannerInputHelper.mapApiError(errorBody, res.code()))
+        }
+    }
+
+    // --- EMBALAGEM ---
+    // Marca a etapa de embalagem de uma unidade como concluída.
+    // NÃO equivale a finalizar toda a ordem de produção.
+    suspend fun marcarEmbalada(idOrdem: Int): Result<Unit> = runCatching {
+        val res = api.marcarEmbalada(idOrdem)
+        if (!res.isSuccessful) {
+            val errorBody = res.errorBody()?.string()?.take(200) ?: ""
+            throw Exception(ScannerInputHelper.mapApiError(errorBody, res.code()))
+        }
     }
 }

@@ -6,11 +6,11 @@ plugins {
 
 android {
     namespace = "com.example.applinhamontagem"
-    compileSdk = 35 // Ajustado para versão estável (Android 15)
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.applinhamontagem"
-        minSdk = 26 // Recomendado API 26 (Android 8.0) para apps industriais modernas
+        minSdk = 26
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -19,14 +19,21 @@ android {
     }
 
     buildTypes {
+        debug {
+            // Emulador Android Studio: 10.0.2.2 redireciona para localhost do PC
+            buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:5137/\"")
+        }
         release {
             isMinifyEnabled = false
+            // IMPORTANTE: substituir pela URL HTTPS real antes de distribuir
+            buildConfigField("String", "API_BASE_URL", "\"https://CONFIGURAR_URL_PRODUCAO/\"")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -36,11 +43,11 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
 dependencies {
-    // --- BIBLIOTECAS PADRÃO (Mantidas do teu projeto) ---
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -50,30 +57,28 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
 
-    // --- NAVEGAÇÃO ENTRE ECRÃS (Login -> Montagem) ---
+    // Navegação entre ecrãs
     implementation("androidx.navigation:navigation-compose:2.8.5")
 
-    // --- REDE / API (Conectar ao Backend) ---
+    // Rede / API
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-    // Logging Interceptor: Permite ver os JSONs que vêm da API no Logcat
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
-    // --- CÂMARA E CÓDIGO DE BARRAS (Scanner Real) ---
+    // Câmara e código de barras (integração real em fases posteriores)
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
     implementation("com.google.zxing:core:3.5.1")
 
-    // --- IMAGENS (Carregar fotos das peças via URL) ---
+    // Imagens
     implementation("io.coil-kt:coil-compose:2.5.0")
 
-    // --- PERSISTÊNCIA DE SESSÃO ---
+    // Persistência de sessão
     implementation("androidx.datastore:datastore-preferences:1.1.1")
 
-    // --- ÍCONES (Pack completo de ícones Material Design) ---
+    // Ícones Material Design
     implementation("androidx.compose.material:material-icons-extended:1.7.6")
-    implementation(libs.mediation.test.suite)
 
-    // --- TESTES (Padrão) ---
+    // Testes
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

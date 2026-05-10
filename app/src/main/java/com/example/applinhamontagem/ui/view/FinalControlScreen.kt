@@ -71,7 +71,7 @@ fun FinalControlScreen(navController: NavController, prodViewModel: ProductionVi
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = if (isReady) StatusSuccess else Color.LightGray)
             ) {
-                Text(if (isReady) "TUDO OK - AVANCAR P/ EMBALAGEM" else "RESOLVA AS FALHAS PENDENTES", fontWeight = FontWeight.Bold)
+                Text(if (isReady) "TUDO OK — AVANÇAR PARA EMBALAGEM" else "RESOLVA AS FALHAS PENDENTES", fontWeight = FontWeight.Bold)
                 if (isReady) { Spacer(Modifier.width(12.dp)); Icon(Icons.AutoMirrored.Filled.ArrowForward, null) }
             }
         }

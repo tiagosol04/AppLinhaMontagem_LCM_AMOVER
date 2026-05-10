@@ -82,4 +82,10 @@ interface AssemblyApiService {
     // --- UTILIZADORES ---
     @GET("api/utilizadores/{id}/motas")
     suspend fun getMotasDoUtilizadorById(@Path("id") idUtilizador: Int): Response<List<MotaAtribuidaDto>>
+
+    // --- EMBALAGEM / CONCLUSÃO DE ETAPA ---
+    // Marca a etapa de embalagem de uma unidade como concluída.
+    // NÃO é equivalente a finalizar toda a ordem de produção.
+    @POST("api/ordens/{id}/marcar-embalada")
+    suspend fun marcarEmbalada(@Path("id") id: Int): Response<Unit>
 }

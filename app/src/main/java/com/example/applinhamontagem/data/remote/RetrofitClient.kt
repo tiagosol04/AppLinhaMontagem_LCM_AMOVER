@@ -1,5 +1,6 @@
 package com.example.applinhamontagem.data.remote
 
+import com.example.applinhamontagem.BuildConfig
 import com.example.applinhamontagem.data.utils.Constants
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -16,6 +17,8 @@ object RetrofitClient {
         authToken = token
     }
 
+    fun getToken(): String? = authToken
+
     private val authInterceptor = Interceptor { chain ->
         val req = chain.request()
         val token = authToken
@@ -27,12 +30,20 @@ object RetrofitClient {
         chain.proceed(newReq)
     }
 
+    // Em debug: BODY completo para facilitar diagnóstico.
+    // Em release: NONE — não expor tokens nem dados de produção nos logs.
+    private val loggingInterceptor = HttpLoggingInterceptor().apply {
+        level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY
+                else HttpLoggingInterceptor.Level.NONE
+    }
+
     private val client: OkHttpClient by lazy {
         OkHttpClient.Builder()
             .addInterceptor(authInterceptor)
-            .addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY })
+            .addInterceptor(loggingInterceptor)
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
             .build()
     }
 

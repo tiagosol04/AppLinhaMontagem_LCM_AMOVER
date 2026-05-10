@@ -14,7 +14,9 @@ data class LoginResponse(
     @SerializedName("username") val username: String,
     @SerializedName("email") val email: String,
     @SerializedName("roles") val roles: List<String>,
-    @SerializedName("expiresInMinutes") val expiresInMinutes: Int? = null
+    @SerializedName("expiresInMinutes") val expiresInMinutes: Int? = null,
+    // ID operacional do utilizador (tabela Utilizadores) — distinto do GUID userId do ASP.NET Identity
+    @SerializedName("idUtilizador") val idUtilizador: Int? = null
 )
 
 // --- CHECKLISTS ---
@@ -95,8 +97,9 @@ data class CriarMotaRequest(
     @SerializedName("idModelo") val idModelo: Int,
     @SerializedName("cor") val cor: String = "N/A",
     @SerializedName("quilometragem") val quilometragem: Double = 0.0,
-    @SerializedName("estado") val estado: Int = 1, // Default 1
-    @SerializedName("idOrdemProducao") val idOrdemProducao: Int, // Adicionado conforme teu controller
+    // Estado 0 = Em Produção (correto para mota recém-criada numa ordem de produção)
+    @SerializedName("estado") val estado: Int = 0,
+    @SerializedName("idOrdemProducao") val idOrdemProducao: Int,
     @SerializedName("numeroIdentificacao") val numeroIdentificacao: String = ""
 )
 

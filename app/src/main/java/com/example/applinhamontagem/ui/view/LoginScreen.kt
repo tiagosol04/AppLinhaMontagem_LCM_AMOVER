@@ -7,12 +7,12 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -27,9 +27,12 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel) {
     var username by remember { mutableStateOf("") }
     var pin by remember { mutableStateOf("") }
     val isLoading = viewModel.isLoading
+    val isCheckingSession = viewModel.isCheckingSession
     val error = viewModel.loginError
     val user = viewModel.user
+    val context = LocalContext.current
 
+    // Navegar para Dashboard quando sessão é restaurada ou login bem-sucedido
     LaunchedEffect(user) {
         if (user != null) {
             navController.navigate(Screen.Dashboard.route) {
@@ -39,20 +42,42 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel) {
     }
 
     Box(
-        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center
     ) {
+        // Enquanto verifica sessão guardada, mostrar indicador de carregamento
+        if (isCheckingSession) {
+            CircularProgressIndicator()
+            return@Box
+        }
+
         Card(
-            modifier = Modifier.padding(24.dp).fillMaxWidth(),
+            modifier = Modifier
+                .padding(24.dp)
+                .fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
         ) {
             Column(
-                modifier = Modifier.padding(32.dp).fillMaxWidth(),
+                modifier = Modifier
+                    .padding(32.dp)
+                    .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("A-MOVER", style = MaterialTheme.typography.headlineLarge.copy(color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold))
-                Text("Chão de Fábrica", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.secondary)
+                Text(
+                    "A-MOVER",
+                    style = MaterialTheme.typography.headlineLarge.copy(
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+                Text(
+                    "Chão de Fábrica",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.secondary
+                )
 
                 Spacer(modifier = Modifier.height(32.dp))
 
@@ -71,7 +96,7 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel) {
                 OutlinedTextField(
                     value = pin,
                     onValueChange = { pin = it },
-                    label = { Text("PIN / Password") },
+                    label = { Text("PIN / Palavra-passe") },
                     leadingIcon = { Icon(Icons.Default.Lock, null) },
                     visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -83,18 +108,30 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel) {
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Button(
-                    onClick = { viewModel.login(username, pin) },
-                    modifier = Modifier.fillMaxWidth().height(50.dp),
+                    onClick = { viewModel.login(username, pin, context) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
                     shape = RoundedCornerShape(8.dp),
-                    enabled = !isLoading
+                    enabled = !isLoading && username.isNotBlank() && pin.isNotBlank()
                 ) {
-                    if (isLoading) CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
-                    else Text("ENTRAR", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            color = Color.White,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    } else {
+                        Text("ENTRAR", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    }
                 }
 
                 if (error != null) {
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text(error ?: "", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                    Text(
+                        error,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall
+                    )
                 }
             }
         }
